@@ -622,30 +622,38 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     
-    // Build the share URL and text
-    const shareUrl = window.location.href;
+    // Build clean share URL without query parameters
+    const shareUrl = window.location.origin + window.location.pathname;
     const shareText = `Check out ${activityName} at Mergington High School! ${activity.description}`;
     const formattedSchedule = formatSchedule(activity);
     const shareEmailBody = `Hi!\n\nI wanted to share this exciting extracurricular activity with you:\n\n${activityName}\n${activity.description}\n\nSchedule: ${formattedSchedule}\nSpots available: ${activity.max_participants - activity.participants.length}\n\nLearn more and register at: ${shareUrl}\n\nBest regards,\nMergington High School`;
     
-    let shareLink;
-    
     switch (platform) {
       case "facebook":
-        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
-        window.open(shareLink, "_blank", "width=600,height=400");
-        showMessage("Opening Facebook share dialog...", "info");
+        const fbLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        const fbWindow = window.open(fbLink, "_blank", "width=600,height=400,noopener,noreferrer");
+        if (fbWindow) {
+          showMessage("Opening Facebook share dialog...", "info");
+        } else {
+          showMessage("Please allow popups to share on Facebook", "error");
+        }
         break;
         
       case "twitter":
-        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-        window.open(shareLink, "_blank", "width=600,height=400");
-        showMessage("Opening Twitter share dialog...", "info");
+        const twitterLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        const twitterWindow = window.open(twitterLink, "_blank", "width=600,height=400,noopener,noreferrer");
+        if (twitterWindow) {
+          showMessage("Opening Twitter share dialog...", "info");
+        } else {
+          showMessage("Please allow popups to share on Twitter", "error");
+        }
         break;
         
       case "email":
-        shareLink = `mailto:?subject=${encodeURIComponent(`Check out ${activityName}!`)}&body=${encodeURIComponent(shareEmailBody)}`;
-        window.location.href = shareLink;
+        const emailLink = `mailto:?subject=${encodeURIComponent(`Check out ${activityName}!`)}&body=${encodeURIComponent(shareEmailBody)}`;
+        const emailAnchor = document.createElement("a");
+        emailAnchor.href = emailLink;
+        emailAnchor.click();
         showMessage("Opening email client...", "info");
         break;
         
