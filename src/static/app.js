@@ -552,6 +552,21 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="social-sharing">
+        <span class="social-sharing-label">Share:</span>
+        <button class="share-button facebook tooltip" data-activity="${name}" data-platform="facebook" aria-label="Share on Facebook">
+          📘
+          <span class="tooltip-text">Share on Facebook</span>
+        </button>
+        <button class="share-button twitter tooltip" data-activity="${name}" data-platform="twitter" aria-label="Share on Twitter">
+          🐦
+          <span class="tooltip-text">Share on Twitter</span>
+        </button>
+        <button class="share-button email tooltip" data-activity="${name}" data-platform="email" aria-label="Share via Email">
+          ✉️
+          <span class="tooltip-text">Share via Email</span>
+        </button>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -577,6 +592,12 @@ document.addEventListener("DOMContentLoaded", () => {
       button.addEventListener("click", handleUnregister);
     });
 
+    // Add click handlers for social sharing buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", handleShare);
+    });
+
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
       const registerButton = activityCard.querySelector(".register-button");
@@ -588,6 +609,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     activitiesList.appendChild(activityCard);
+  }
+
+  // Handle social sharing
+  function handleShare(event) {
+    const activityName = event.currentTarget.dataset.activity;
+    const platform = event.currentTarget.dataset.platform;
+    const activity = allActivities[activityName];
+    
+    if (!activity) {
+      showMessage("Activity not found", "error");
+      return;
+    }
+    
+    // Build the share URL and text
+    const shareUrl = window.location.href;
+    const shareText = `Check out ${activityName} at Mergington High School! ${activity.description}`;
+    const formattedSchedule = formatSchedule(activity);
+    const shareEmailBody = `Hi!\n\nI wanted to share this exciting extracurricular activity with you:\n\n${activityName}\n${activity.description}\n\nSchedule: ${formattedSchedule}\nSpots available: ${activity.max_participants - activity.participants.length}\n\nLearn more and register at: ${shareUrl}\n\nBest regards,\nMergington High School`;
+    
+    let shareLink;
+    
+    switch (platform) {
+      case "facebook":
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+        window.open(shareLink, "_blank", "width=600,height=400");
+        showMessage("Opening Facebook share dialog...", "info");
+        break;
+        
+      case "twitter":
+        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(shareLink, "_blank", "width=600,height=400");
+        showMessage("Opening Twitter share dialog...", "info");
+        break;
+        
+      case "email":
+        shareLink = `mailto:?subject=${encodeURIComponent(`Check out ${activityName}!`)}&body=${encodeURIComponent(shareEmailBody)}`;
+        window.location.href = shareLink;
+        showMessage("Opening email client...", "info");
+        break;
+        
+      default:
+        showMessage("Unknown sharing platform", "error");
+    }
   }
 
   // Event listeners for search and filter
